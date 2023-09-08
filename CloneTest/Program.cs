@@ -29,3 +29,14 @@
         dystrybuanta[i] = mapa.Take(i + 1).Sum();
     }
 }
+{
+    // Przykład wykorzystania obiektu List<int>
+    List<int> list = new()
+    {
+        5, 0
+    }; // Lista zainicjowana 2 wartościami przy tworzeniu
+    list.Add(1); // Dodawanie kolejnego elementu na koniec listy
+    list.Add(2);
+    list.Add(3);
+    int v = list[0] + list[2]; // v = 6, pobieranie elementu po indeksie
+}
