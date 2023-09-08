@@ -17,6 +17,15 @@
         if (center < x) borderA = center;
         else borderB = center;
     }
-
     int wynik = borderA;
+}
+{
+    // Przykład liczenia dystrybuanty
+    // Przykład nie jest najbardziej optymalny. Poszukaj sposobu jak to zoptymalizować. Problem znajduje się w pętli
+    double[] mapa = Enumerable.Range(0, 50).Select(x => Math.Pow(x / 50.0, 2)).ToArray(); // Wygenerowana mapa
+    double[] dystrybuanta = new double[mapa.Length];
+    for (int i = 0; i < 50; i++)
+    {
+        dystrybuanta[i] = mapa.Take(i + 1).Sum();
+    }
 }
