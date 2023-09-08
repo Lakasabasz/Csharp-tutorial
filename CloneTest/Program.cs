@@ -40,3 +40,12 @@
     list.Add(3);
     int v = list[0] + list[2]; // v = 6, pobieranie elementu po indeksie
 }
+{
+    // Przykład wykorzystania Tuple
+    Tuple<int, int, double> tuple = new Tuple<int, int, double>(1, 2, 2.5); // Tworzenie Tuple o wartościach int:1, int:2, double:2.5
+    int x = tuple.Item1; // Wyciąganie wartości
+    int y = tuple.Item2;
+    double z = tuple.Item3;
+
+    Tuple<bool, string> tuple2; // Inny układ typów
+}
