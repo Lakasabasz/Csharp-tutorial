@@ -34,6 +34,9 @@ namespace Zadanie1
             Console.WriteLine("Podaj liczbę węzłów");
             int no_of_hubs = ReadInt();
 
+            Console.WriteLine("Podaj liczbę punktów powiązania (N)");
+            int no_of_links = ReadInt();
+
             // hubs indexes
             var hubs = new List<Tuple<int, int>>();
 
@@ -42,8 +45,8 @@ namespace Zadanie1
             var hubs_desirability = new List<Tuple<int, int, double>>();
 
             // distributions
-            double[] density_distribution = new double[no_of_hubs];
-            double[] desirabilit_distribution = new double[no_of_hubs];
+            //double[] density_distribution = new double[no_of_hubs];
+            //double[] desirability_distribution = new double[no_of_hubs];
 
             Random rnd = new Random();
             for (int i = 0; i < no_of_hubs; ++i)
@@ -54,34 +57,52 @@ namespace Zadanie1
                 hubs_desity.Add(Tuple.Create(x, y, density_map[x, y]));
                 hubs_desirability.Add(Tuple.Create(x, y, desirability_map[x, y]));
 
-                if (i == 0)
-                {
-                    density_distribution[i] = hubs_desity[i].Item3;
-                    desirabilit_distribution[i] = hubs_desirability[i].Item3;
-                }
-                else
-                {
-                    density_distribution[i] = hubs_desity[i].Item3 + density_distribution[i - 1];
-                    desirabilit_distribution[i] = hubs_desirability[i].Item3 + desirabilit_distribution[i - 1];
-                }
             }
 
+            var density_distribution = PrepareHubDistribution(hubs_desity);
+            var desirability_distribution = PrepareHubDistribution(hubs_desirability);
 
-            for (int x = 0; x < density_size_x; ++x)
+            //Console.WriteLine("Density map");
+            //Print2DMap(density_map, density_size_x, density_size_y);
+
+            //Console.WriteLine("Desirability map");
+            //Print2DMap(desirability_map, density_size_x, density_size_y);
+
+            var density_dist_max = density_distribution.Max();
+            var desirability_dist_max = desirability_distribution.Max();
+
+            var density_points = new List<int>();
+            var desirability_points = new List<int>();
+
+            for (int point_no = 0; point_no < no_of_links; ++point_no)
             {
-                for (int y = 0; y < density_size_y; ++y)
+                var density_val = rnd.Next(0, (int)density_dist_max + 1);
+                var desirability_val = rnd.Next(0, (int)desirability_dist_max + 1);
+
+                var density_id = BinarySearch(density_distribution, density_val);
+                var desirability_id = BinarySearch(desirability_distribution, desirability_val);
+
+                if (hubs_desity[density_id].Item1 == hubs_desirability[desirability_id].Item1 &&
+                    hubs_desity[density_id].Item2 == hubs_desirability[desirability_id].Item2)
                 {
-                    Console.WriteLine("x: " + x + ", y: " + y + " -> " + density_map[x, y]);
+                    continue;
                 }
+                density_points.Add(density_id);
+                desirability_points.Add(desirability_id);
             }
 
-            for (int x = 0; x < density_size_x; ++x)
+            for (int i = 0; i < density_points.Count(); ++i)
             {
-                for (int y = 0; y < density_size_y; ++y)
-                {
-                    Console.WriteLine("x: " + x + ", y: " + y + " -> " + desirability_map[x, y]);
-                }
+                int density_id = density_points[i];
+                int desirability_id = desirability_points[i];
+                Console.WriteLine("Travel from x: " + hubs_desity[density_id].Item1 +
+                    " y: " + hubs_desity[density_id].Item2 +
+                    " density: " + hubs_desity[density_id].Item3 +
+                    ", to x: " + hubs_desirability[desirability_id].Item1 +
+                    " y: " + hubs_desirability[desirability_id].Item2 +
+                    " desirability: " + hubs_desirability[desirability_id].Item3);
             }
+
         }
 
         static int ReadInt()
@@ -100,12 +121,29 @@ namespace Zadanie1
         {
             double[,] density_map = new double[density_size_x, density_size_y];
 
+            Func<int, int, double> element = (x, y) => (-((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8)) + 4);
+            double min_candidate = element(0, 0);
+
             for (int x = 0; x < density_size_x; ++x)
             {
                 for (int y = 0; y < density_size_y; ++y)
                 {
-                    density_map[x, y] = -((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8)) + 4;
+                    density_map[x, y] = element(x, y);
+
+                    min_candidate = Math.Min(min_candidate, density_map[x, y]);
                 }
+            }
+
+            if (min_candidate < 0)
+            {
+                for (int x = 0; x < density_size_x; ++x)
+                {
+                    for (int y = 0; y < density_size_y; ++y)
+                    {
+                        density_map[x, y] -= min_candidate;
+                    }
+                }
+
             }
 
             return density_map;
@@ -124,6 +162,53 @@ namespace Zadanie1
             }
 
             return desirability_map;
+        }
+
+        static void Print2DMap(double[,] map, int x_size, int y_size)
+        {
+            for (var i = 0; i < x_size; ++i)
+            {
+                for (var j = 0; j < y_size; ++j)
+                {
+                    Console.Write(map[i, j] + " ");
+                }
+                Console.Write("\n");
+            }
+
+        }
+
+        static List<Double> PrepareHubDistribution(List<Tuple<int, int, double>> id_val_map)
+        {
+            List<Double> result = new List<double>();
+            if (id_val_map.Count() == 0)
+            {
+                return result;
+            }
+            result.Add(id_val_map[0].Item3);
+
+            for (int i = 1; i < id_val_map.Count(); ++i)
+            {
+                result.Add(id_val_map[i].Item3 + result[i - 1]);
+            }
+
+            return result;
+        }
+
+        static int BinarySearch(List<double> tab, double val)
+        {
+            // ToDo(146karol): do binary search, not just linear
+            if (tab.Count() == 0 || val < tab[0])
+            {
+                return 0;
+            }
+            for (int i = 0; i < tab.Count() - 1; ++i)
+            {
+                if (tab[i] < val && val < tab[i + 1])
+                {
+                    return i;
+                }
+            }
+            return tab.Count();
         }
     }
 }
