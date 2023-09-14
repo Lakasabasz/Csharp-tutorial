@@ -73,6 +73,7 @@ namespace Zadanie1
                 if (hubsDesity[densityId].Item1 == hubsDesirability[desirabilityId].Item1 &&
                     hubsDesity[densityId].Item2 == hubsDesirability[desirabilityId].Item2)
                 {
+                    --pointNo;
                     continue;
                 }
                 densityPoints.Add(densityId);
@@ -93,19 +94,18 @@ namespace Zadanie1
 
         }
 
-        /*
+
         static int ReadInt()
         {
             string? linia = Console.ReadLine();
-            if (linia == null)
-            {
-                throw new ArgumentException("Oczekiwano wartosci typu int");
-            }
-            int liniaInt = Convert.ToInt32(linia);
+            _ = linia ?? throw new ArgumentException("Oczekiwano wartosci typu int");
+            int liniaInt;
+            bool success = int.TryParse(linia, out liniaInt);
+            if (!success) { throw new ArgumentException("Nie udało się przetworzyć " + linia + " na int"); }
 
             return liniaInt;
         }
-        */
+
 
         static double[,] GenerateDensityMap(int densitySizeX, int densitySizeY)
         {
@@ -162,7 +162,7 @@ namespace Zadanie1
                 {
                     Console.Write(map[i, j] + " ");
                 }
-                Console.Write("\n");
+                Console.WriteLine();
             }
 
         }
