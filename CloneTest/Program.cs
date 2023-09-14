@@ -7,15 +7,6 @@ Console.WriteLine(text);
 */
 
 
-/*
-int? rozmiar_gestosc_x = null;
-
-double[,] gestosci = { { } };
-
-*/
-
-using static System.Net.Mime.MediaTypeNames;
-
 namespace Zadanie1
 {
     class Program
@@ -23,84 +14,81 @@ namespace Zadanie1
         static void Main(string[] args)
         {
             Console.WriteLine("Podaj wymiar mapy gestosci, skladowa X");
-            int density_size_x = ReadInt();
+            int densitySizeX = ReadInt();
 
             Console.WriteLine("Podaj wymiar mapy gestosci, skladowa Y");
-            int density_size_y = ReadInt();
+            int densitySizeY = ReadInt();
 
-            var density_map = GenerateDensityMap(density_size_x, density_size_y);
-            var desirability_map = GenerateDesirabilityMap(density_size_x, density_size_y);
+            var densityMap = GenerateDensityMap(densitySizeX, densitySizeY);
+            var desirabilityMap = GenerateDesirabilityMap(densitySizeX, densitySizeY);
 
             Console.WriteLine("Podaj liczbę węzłów");
-            int no_of_hubs = ReadInt();
+            int noOfHubs = ReadInt();
 
             Console.WriteLine("Podaj liczbę punktów powiązania (N)");
-            int no_of_links = ReadInt();
+            int noOfLinks = ReadInt();
 
             // hubs indexes
             var hubs = new List<Tuple<int, int>>();
 
             // density & desirability - index + value
-            var hubs_desity = new List<Tuple<int, int, double>>();
-            var hubs_desirability = new List<Tuple<int, int, double>>();
+            var hubsDesity = new List<Tuple<int, int, double>>();
+            var hubsDesirability = new List<Tuple<int, int, double>>();
 
-            // distributions
-            //double[] density_distribution = new double[no_of_hubs];
-            //double[] desirability_distribution = new double[no_of_hubs];
 
             Random rnd = new Random();
-            for (int i = 0; i < no_of_hubs; ++i)
+            for (int i = 0; i < noOfHubs; ++i)
             {
-                var x = rnd.Next(0, density_size_x);
-                var y = rnd.Next(0, density_size_y);
+                var x = rnd.Next(0, densitySizeX);
+                var y = rnd.Next(0, densitySizeY);
                 hubs.Add(Tuple.Create(x, y));
-                hubs_desity.Add(Tuple.Create(x, y, density_map[x, y]));
-                hubs_desirability.Add(Tuple.Create(x, y, desirability_map[x, y]));
+                hubsDesity.Add(Tuple.Create(x, y, densityMap[x, y]));
+                hubsDesirability.Add(Tuple.Create(x, y, desirabilityMap[x, y]));
 
             }
 
-            var density_distribution = PrepareHubDistribution(hubs_desity);
-            var desirability_distribution = PrepareHubDistribution(hubs_desirability);
+            var densityDistribution = PrepareHubDistribution(hubsDesity);
+            var desirabilityDistribution = PrepareHubDistribution(hubsDesirability);
 
             //Console.WriteLine("Density map");
-            //Print2DMap(density_map, density_size_x, density_size_y);
+            //Print2DMap(densityMap, densitySizeX, densitySizeY);
 
             //Console.WriteLine("Desirability map");
-            //Print2DMap(desirability_map, density_size_x, density_size_y);
+            //Print2DMap(desirabilityMap, densitySizeX, densitySizeY);
 
-            var density_dist_max = density_distribution.Max();
-            var desirability_dist_max = desirability_distribution.Max();
+            var densityDistMax = densityDistribution.Max();
+            var desirabilityDistyMax = desirabilityDistribution.Max();
 
-            var density_points = new List<int>();
-            var desirability_points = new List<int>();
+            var densityPoints = new List<int>();
+            var desirabilityPoints = new List<int>();
 
-            for (int point_no = 0; point_no < no_of_links; ++point_no)
+            for (int pointNo = 0; pointNo < noOfLinks; ++pointNo)
             {
-                var density_val = rnd.Next(0, (int)density_dist_max + 1);
-                var desirability_val = rnd.Next(0, (int)desirability_dist_max + 1);
+                var densityVal = rnd.Next(0, (int)densityDistMax + 1);
+                var desirabilityVal = rnd.Next(0, (int)desirabilityDistyMax + 1);
 
-                var density_id = BinarySearch(density_distribution, density_val);
-                var desirability_id = BinarySearch(desirability_distribution, desirability_val);
+                var densityId = BinarySearch(densityDistribution, densityVal);
+                var desirabilityId = BinarySearch(desirabilityDistribution, desirabilityVal);
 
-                if (hubs_desity[density_id].Item1 == hubs_desirability[desirability_id].Item1 &&
-                    hubs_desity[density_id].Item2 == hubs_desirability[desirability_id].Item2)
+                if (hubsDesity[densityId].Item1 == hubsDesirability[desirabilityId].Item1 &&
+                    hubsDesity[densityId].Item2 == hubsDesirability[desirabilityId].Item2)
                 {
                     continue;
                 }
-                density_points.Add(density_id);
-                desirability_points.Add(desirability_id);
+                densityPoints.Add(densityId);
+                desirabilityPoints.Add(desirabilityId);
             }
 
-            for (int i = 0; i < density_points.Count(); ++i)
+            for (int i = 0; i < densityPoints.Count(); ++i)
             {
-                int density_id = density_points[i];
-                int desirability_id = desirability_points[i];
-                Console.WriteLine("Travel from x: " + hubs_desity[density_id].Item1 +
-                    " y: " + hubs_desity[density_id].Item2 +
-                    " density: " + hubs_desity[density_id].Item3 +
-                    ", to x: " + hubs_desirability[desirability_id].Item1 +
-                    " y: " + hubs_desirability[desirability_id].Item2 +
-                    " desirability: " + hubs_desirability[desirability_id].Item3);
+                int densityId = densityPoints[i];
+                int desirabilityId = desirabilityPoints[i];
+                Console.WriteLine("Travel from x: " + hubsDesity[densityId].Item1 +
+                    " y: " + hubsDesity[densityId].Item2 +
+                    " density: " + hubsDesity[densityId].Item3 +
+                    ", to x: " + hubsDesirability[desirabilityId].Item1 +
+                    " y: " + hubsDesirability[desirabilityId].Item2 +
+                    " desirability: " + hubsDesirability[desirabilityId].Item3);
             }
 
         }
@@ -112,63 +100,63 @@ namespace Zadanie1
             {
                 throw new ArgumentException("Oczekiwano wartosci typu int");
             }
-            int linia_int = Convert.ToInt32(linia);
+            int liniaInt = Convert.ToInt32(linia);
 
-            return linia_int;
+            return liniaInt;
         }
 
-        static double[,] GenerateDensityMap(int density_size_x, int density_size_y)
+        static double[,] GenerateDensityMap(int densitySizeX, int densitySizeY)
         {
-            double[,] density_map = new double[density_size_x, density_size_y];
+            double[,] densityMap = new double[densitySizeX, densitySizeY];
 
             Func<int, int, double> element = (x, y) => (-((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8)) + 4);
-            double min_candidate = element(0, 0);
+            double minCandidate = element(0, 0);
 
-            for (int x = 0; x < density_size_x; ++x)
+            for (int x = 0; x < densitySizeX; ++x)
             {
-                for (int y = 0; y < density_size_y; ++y)
+                for (int y = 0; y < densitySizeY; ++y)
                 {
-                    density_map[x, y] = element(x, y);
+                    densityMap[x, y] = element(x, y);
 
-                    min_candidate = Math.Min(min_candidate, density_map[x, y]);
+                    minCandidate = Math.Min(minCandidate, densityMap[x, y]);
                 }
             }
 
-            if (min_candidate < 0)
+            if (minCandidate < 0)
             {
-                for (int x = 0; x < density_size_x; ++x)
+                for (int x = 0; x < densitySizeX; ++x)
                 {
-                    for (int y = 0; y < density_size_y; ++y)
+                    for (int y = 0; y < densitySizeY; ++y)
                     {
-                        density_map[x, y] -= min_candidate;
+                        densityMap[x, y] -= minCandidate;
                     }
                 }
 
             }
 
-            return density_map;
+            return densityMap;
         }
 
-        static double[,] GenerateDesirabilityMap(int desirability_size_x, int desirability_size_y)
+        static double[,] GenerateDesirabilityMap(int desirabilitySizeX, int desirabilitySizeY)
         {
-            double[,] desirability_map = new double[desirability_size_x, desirability_size_y];
+            double[,] desirabilityMap = new double[desirabilitySizeX, desirabilitySizeY];
 
-            for (int x = 0; x < desirability_size_x; ++x)
+            for (int x = 0; x < desirabilitySizeX; ++x)
             {
-                for (int y = 0; y < desirability_size_y; ++y)
+                for (int y = 0; y < desirabilitySizeY; ++y)
                 {
-                    desirability_map[x, y] = -Math.Abs((x - desirability_size_x / 2.0) * (y - desirability_size_y / 2.0)) + (desirability_size_x / 2.0 * desirability_size_y / 2.0);
+                    desirabilityMap[x, y] = -Math.Abs((x - desirabilitySizeX / 2.0) * (y - desirabilitySizeY / 2.0)) + (desirabilitySizeX / 2.0 * desirabilitySizeY / 2.0);
                 }
             }
 
-            return desirability_map;
+            return desirabilityMap;
         }
 
-        static void Print2DMap(double[,] map, int x_size, int y_size)
+        static void Print2DMap(double[,] map, int xSize, int ySize)
         {
-            for (var i = 0; i < x_size; ++i)
+            for (var i = 0; i < xSize; ++i)
             {
-                for (var j = 0; j < y_size; ++j)
+                for (var j = 0; j < ySize; ++j)
                 {
                     Console.Write(map[i, j] + " ");
                 }
@@ -177,18 +165,18 @@ namespace Zadanie1
 
         }
 
-        static List<Double> PrepareHubDistribution(List<Tuple<int, int, double>> id_val_map)
+        static List<Double> PrepareHubDistribution(List<Tuple<int, int, double>> idValMap)
         {
             List<Double> result = new List<double>();
-            if (id_val_map.Count() == 0)
+            if (idValMap.Count() == 0)
             {
                 return result;
             }
-            result.Add(id_val_map[0].Item3);
+            result.Add(idValMap[0].Item3);
 
-            for (int i = 1; i < id_val_map.Count(); ++i)
+            for (int i = 1; i < idValMap.Count(); ++i)
             {
-                result.Add(id_val_map[i].Item3 + result[i - 1]);
+                result.Add(idValMap[i].Item3 + result[i - 1]);
             }
 
             return result;
