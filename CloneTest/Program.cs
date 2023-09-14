@@ -1,16 +1,22 @@
-﻿internal class Program
+﻿using CloneTest;
+using System.Collections.Immutable;
+using static CloneTest.BinarySearch;
+
+internal class Program
 {
     private static void Main(string[] args)
     {
-        int nPeople; 
+        int nPeople, nHubs; 
         int xDim, yDim;
         double x, y;
-        Random rnd = new Random();
+        Random rnd = new();
 
         xDim = 10;  // (Dawniej a) Wymiar tablicy w osi x
         yDim = 10;  // (Dawniej b) Wymiar tablicy w osi y
 
         nPeople = 10;  //Liczba wylosowanych komórek
+
+        nHubs = 1; //Liczba hubów początkowych i końcowych
 
 
 
@@ -39,25 +45,41 @@
 
         double tempDist = 0;  //Zmienna tymczasowa na potrzeby obliczenia dystrybuant
         
-        for (int i = 0; i < nPeople; i++) {  //Obliczenie dystrybuant i zapisanie ich do listy distDens
+        for (int i = 0; i < nPeople; i++) {  //Obliczenie dystrybuant i zapisanie ich do listy cdfDensity
             tempDist += hubsDensity[i].Item3;
             cdfDensity.Add(tempDist);
         }
+
+        var startingHubs = new List<Tuple<int, int>>();  //inicjacja listy zapisującej finalne punkty poczatkowe
+
+        for (int i = 0; i < nHubs; i++) {
+
+            double cdfTargetDensity = RandomDouble(cdfDensity[0], cdfDensity.Last());  //Losowanie wartości gestosci (na podstawie dystrybuanty)
+
+            int cdfFound = BinarySearch.SearchClosest(cdfDensity, cdfTargetDensity); //
+
+            startingHubs.Add(Tuple.Create(hubsDensity[cdfFound].Item1, hubsDensity[cdfFound].Item2)); // Przepisanie wartości x i y wylosowanego huba do listy hubów startowych
+
+        }
+
+        /*
+        for (int i = 0; i < cdfDensity.Count(); i++)
+        {
+            Console.WriteLine(cdfDensity[i]);
+        }
+       */
 
 
         
 
 
-        /*
-        foreach (Tuple<int, int, double> tuple in hubsDensity) {
-            Console.WriteLine(tuple.Item1 + " " + tuple.Item2 + " " + tuple.Item3);
+        
+        foreach (Tuple<int, int> tuple in startingHubs) {
+            Console.WriteLine(tuple.Item1 + " " + tuple.Item2);
         }
-        */
+        
         /*
-        for (int i = 0; i < distDens.Count(); i++)
-        {
-            Console.WriteLine(distDens[i]);
-        }
+
         */
         /*
         for (int i = 0; i < yDim; i++) {
@@ -69,5 +91,10 @@
         }
         */
 
+    }
+    protected static double RandomDouble(double min, double max) { 
+        Random rnd = new();
+
+        return min + (max - min) * rnd.NextDouble();
     }
 }
