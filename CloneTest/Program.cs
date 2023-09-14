@@ -13,20 +13,20 @@ namespace Zadanie1
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Podaj wymiar mapy gestosci, skladowa X");
-            int densitySizeX = ReadInt();
+            //Console.WriteLine("Podaj wymiar mapy gestosci, skladowa X");
+            int densitySizeX = 7; // will be repaced with actual variable in future
 
-            Console.WriteLine("Podaj wymiar mapy gestosci, skladowa Y");
-            int densitySizeY = ReadInt();
+            // Console.WriteLine("Podaj wymiar mapy gestosci, skladowa Y");
+            int densitySizeY = 10; // will be repaced with actual variable in future
 
             var densityMap = GenerateDensityMap(densitySizeX, densitySizeY);
             var desirabilityMap = GenerateDesirabilityMap(densitySizeX, densitySizeY);
 
-            Console.WriteLine("Podaj liczbę węzłów");
-            int noOfHubs = ReadInt();
+            // Console.WriteLine("Podaj liczbę węzłów");
+            int noOfHubs = 30; // will be repaced with actual variable in future
 
-            Console.WriteLine("Podaj liczbę punktów powiązania (N)");
-            int noOfLinks = ReadInt();
+            // Console.WriteLine("Podaj liczbę punktów powiązania (N)");
+            int noOfLinks = 5; // will be repaced with actual variable in future
 
             // hubs indexes
             var hubs = new List<Tuple<int, int>>();
@@ -93,6 +93,7 @@ namespace Zadanie1
 
         }
 
+        /*
         static int ReadInt()
         {
             string? linia = Console.ReadLine();
@@ -104,6 +105,7 @@ namespace Zadanie1
 
             return liniaInt;
         }
+        */
 
         static double[,] GenerateDensityMap(int densitySizeX, int densitySizeY)
         {
