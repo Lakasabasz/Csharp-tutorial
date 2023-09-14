@@ -3,7 +3,7 @@ namespace CloneTest;
 
 class Program
 {
-     static void Main(string[] args)
+    static void Main(string[] args)
     {
         int densitySizeX = 7; // will be repaced with actual variable in future
 
@@ -66,12 +66,9 @@ class Program
         {
             int densityId = densityPoints[i];
             int desirabilityId = desirabilityPoints[i];
-            Console.WriteLine("Travel from x: " + hubsDesity[densityId].Item1 +
-                " y: " + hubsDesity[densityId].Item2 +
-                " density: " + hubsDesity[densityId].Item3 +
-                ", to x: " + hubsDesirability[desirabilityId].Item1 +
-                " y: " + hubsDesirability[desirabilityId].Item2 +
-                " desirability: " + hubsDesirability[desirabilityId].Item3);
+            Console.WriteLine($"Travel from x: {hubsDesity[densityId].Item1} y: {hubsDesity[densityId].Item2}" +
+                $" density: {hubsDesity[densityId].Item3}, to x: {hubsDesirability[desirabilityId].Item1}" +
+                $" y: {hubsDesirability[desirabilityId].Item2} desirability: {hubsDesirability[desirabilityId].Item3}");
         }
     }
 
