@@ -1,4 +1,5 @@
-﻿
+﻿using System.Collections.Generic;
+
 namespace CloneTest;
 
 class Program
@@ -17,7 +18,7 @@ class Program
         int noOfLinks = 5; // will be repaced with actual variable in future
 
         // hubs indexes
-        var hubs = new List<Tuple<int, int>>();
+        var hubs = new HashSet<Tuple<int, int>>();
 
         // density & desirability - index + value
         var hubsDesity = new List<Tuple<int, int, double>>();
@@ -25,14 +26,19 @@ class Program
 
 
         Random rnd = new Random();
-        for (int i = 0; i < noOfHubs; ++i)
+        while (hubs.Count < noOfHubs)
         {
             var x = rnd.Next(0, densitySizeX);
             var y = rnd.Next(0, densitySizeY);
             hubs.Add(Tuple.Create(x, y));
+        }
+
+        foreach (var element in hubs)
+        {
+            var x = element.Item1;
+            var y = element.Item2;
             hubsDesity.Add(Tuple.Create(x, y, densityMap[x, y]));
             hubsDesirability.Add(Tuple.Create(x, y, desirabilityMap[x, y]));
-
         }
 
         var densityDistribution = PrepareHubDistribution(hubsDesity);
@@ -150,7 +156,7 @@ class Program
         List<Double> result = new();
         if (idValMap.Count == 0)
         {
-            return result;
+            throw new ArgumentException("Nie można policzyć dystrybuanty dla pustej listy");
         }
         result.Add(idValMap[0].Item3);
 
