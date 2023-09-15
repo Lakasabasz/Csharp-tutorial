@@ -2,30 +2,26 @@
 {
     internal class Quicksort
     {
-
-        public static List<double> SortList(List<double> arr, int startIndex, int endIndex)
+        //Finalnie kod sortowania nie jest używany
+        public static List<Tuple<int, int, int>> SortList(List<Tuple<int, int, int>> arr, int startIndex, int endIndex)
         {
 
             int i = startIndex;
             int j = endIndex;
 
-            double pivot = arr[endIndex];
+            int pivot = arr[endIndex].Item3;
 
-            while (i <= j)
-            {
-                while (arr[i] < pivot)
-                {
+            while (i <= j) {
+                while (arr[i].Item3 < pivot) {
                     i++;
                 }
 
-                while (arr[j] > pivot)
-                {
+                while (arr[j].Item3 > pivot) {
                     j--;
                 }
 
-                if (i <= j)
-                {
-                    double temp = arr[i];
+                if (i <= j) {
+                    Tuple<int, int, int> temp = arr[i];
                     arr[i] = arr[j];
                     arr[j] = temp;
                     i++;
@@ -33,13 +29,11 @@
                 }
             }
 
-            if (startIndex < j)
-            {
+            if (startIndex < j) {
                 SortList(arr, startIndex, j);
             }
 
-            if (i < endIndex)
-            {
+            if (i < endIndex) {
                 SortList(arr, i, endIndex);
             }
 
@@ -53,27 +47,22 @@
             int low = 0;
             int high = list.Count() - 1;
 
-            while (high != low + 1)
-            {
+            while (high != low + 1) {
                 int midIndex = low + (high - low) / 2;
 
-                if (list[midIndex] == key)
-                {
+                if (list[midIndex] == key) {
                     return midIndex;
                 }
-                else if (list[midIndex] < key)
-                {
+                else if (list[midIndex] < key) {
                     low = midIndex;
                 }
-                else
-                {
+                else {
                     high = midIndex;
                 }
 
             }
 
-            if (list[low] < key && list[high] > key)
-            {
+            if (list[low] < key && list[high] > key) {
                 return low;
             }
 
