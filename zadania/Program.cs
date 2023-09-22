@@ -1,5 +1,8 @@
-﻿int width = 100;
+﻿using System.Collections.Generic;
+
+int width = 100;
 int height = 100;
+int n = 5000;
 double[,] generateTableDensity(int width, int height)
 {
     double[,] densityTable = new double[width, height];
@@ -66,7 +69,37 @@ double[] generateDistributionDesirability(List<Tuple<double,int,int>> hubs, int 
     }
     return distribution;
 }
+List<Tuple<int,int,int,int>> generateLinks(List<Tuple<double,int,int>> hubsDensity, List<Tuple<double,int,int>> hubsDesirability, double[] distributionDensity, double[] distributionDesirability, Random ran, int n)
+{
+    List<Tuple<int, int, int, int>> links = new List<Tuple<int, int, int, int>>();
+    for (int i = 0; i < n; i++)
+    {
+        Tuple<int,int> linksA = generateLink(hubsDensity, distributionDensity, ran);
+        Tuple<int,int> linksB = generateLink(hubsDesirability, distributionDesirability, ran);
 
+        links.Add(new Tuple<int,int,int,int> (linksA.Item1, linksA.Item2, linksB.Item1, linksB.Item2));
+    }
+    return links;
+}
+Tuple<int,int> generateLink(List<Tuple<double, int, int>> hubs, double[] distribution, Random ran)
+{
+    double maxDistro = generateMaxDistro(distribution);
+    double randomNumber = ran.NextDouble()*maxDistro;
+    //wyszukiwanie przez podział w dystrybuancie
+    //wyciąganie kordów - mamy dystrybuante, wyszukaliśmy i - który element dystrybuanty to jest, możemy wtedy wyciągnąć kordy z hubs
+    return new Tuple<int,int> (hubs[i].Item2, hubs[i].Item3);
+}
+
+
+double generateMaxDistro(double[] distribution)
+{
+    double distro = 0;
+    for (int i = 0; i<distribution.Length; i++)
+    {
+        if (distribution[i] > distro) { distro = distribution[i]; }
+    }
+    return distro;
+}
 
 
 
@@ -78,10 +111,6 @@ List<Tuple<double, int, int>> hubsDensity = generateHubsDensity(densityTable, ma
 List<Tuple<double, int, int>> hubsDesirability = generateHubsDesirability(desirabilityTable, masterRandomNumber, rand);
 double[] distributionDensity = generateDistributionDensity(hubsDensity, masterRandomNumber);
 double[] distributionDesirability = generateDistributionDesirability(hubsDesirability, masterRandomNumber);
-//randomową liczbe z zakresu 0 do max(dystrybuanta)
-//wyszukiwaniem przez podział - coś jak quicksort troche chyba - wyszukac indeks, taki, ze dystr[i] < nasz x < dystr[i+1]
-//odkopać wtedy po dystrybuancie kordy tego
-//zapisać kordy z obu map do listy przez tuple (w sensie pierwszy z pierwszym, drugi z drugim, etc.)
-//potem wypluć na cmd podsumowanie - jako, że linki mogą występować więcej niż raz - od najbardziej popularnych do najmniej
-//usunąć linki w to samo miejsce - że w obu komórkach tupla beda te same wartosci
-//to chyba wsio
+List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
+//jakaś funkcja trimLinks usuwająca linki w to samo miejsce
+//funkcja summary która tworzy Listę tupli (częstość, element listy links), i potem to jakoś wypluwa na konsolę
