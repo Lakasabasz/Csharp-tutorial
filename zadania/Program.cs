@@ -1,5 +1,4 @@
-﻿//string[] json;
-int width = 100;
+﻿int width = 100;
 int height = 100;
 double[,] generateTableDensity(int width, int height)
 {
@@ -25,22 +24,60 @@ double[,] generateTableDesirability(int width, int height)
     }
     return desirabilityTable;
 }
-
-/*try
+List<Tuple<double,int,int>> generateHubsDensity(double[,] densityTable, int masterRandomNumber, Random random)
 {
-    json = File.ReadAllLines("tables.json");
-
+    List<Tuple<double, int, int>> hubs = new List<Tuple<double, int, int>>();
+    for(int x = 0; x<masterRandomNumber; x++)
+    {
+        int h = random.Next(height-1);
+        int w = random.Next(width-1);
+        hubs.Add( new Tuple<double, int, int>(densityTable[h, w], h, w));
+    }
+    return hubs;
 }
-catch (FileNotFoundException e)
-{*/
+List<Tuple<double,int,int>> generateHubsDesirability(double[,] desirabilityTable, int masterRandomNumber, Random random)
+{
+    List<Tuple<double, int, int>> hubs = new List<Tuple<double, int, int>>();
+    for (int x = 0; x<masterRandomNumber; x++)
+    {
+        int h = random.Next(height-1);
+        int w = random.Next(width-1);
+        hubs.Add(new Tuple<double, int, int>(desirabilityTable[h, w], h, w));
+    }
+    return hubs;
+}
+double[] generateDistributionDensity(List<Tuple<double,int,int>> hubs, int masterRandomNumber)
+{
+    double[] distribution = new double[masterRandomNumber];
+    distribution[0] = hubs[0].Item1;
+    for (int i = 1; i < masterRandomNumber; i++)
+    {
+        distribution[i]= hubs[i].Item1 + distribution[i-1];
+    }
+    return distribution;
+}
+double[] generateDistributionDesirability(List<Tuple<double,int,int>> hubs, int masterRandomNumber)
+{
+    double[] distribution = new double[masterRandomNumber];
+    distribution[0] = hubs[0].Item1;
+    for (int i = 1; i < masterRandomNumber; i++)
+    {
+        distribution[i]= hubs[i].Item1 + distribution[i-1];
+    }
+    return distribution;
+}
+
+
+
+
 double[,] densityTable = generateTableDensity(width, height);
 double[,] desirabilityTable = generateTableDesirability(width, height);
-//}
 Random rand = new Random();
-//wybór randomowej liczby randomowych punktów z obu map
-//ustawiłbym górny zakres randa np. jako 2*sqrt(x*y), co by nie było ich zbyt dużo, przynajmniej na razie - potem może będzie wskazane więcej
-//dicty z pushowanymi do stringa koordynatami (lub w tuple) i wartością - po jednym dla mapy
-//dystrybuanty posumować z tych dictów - to jakieś tablice o rozmiarze naszego randa wciąż
+int masterRandomNumber = rand.Next(0, Int32.Parse((5 * Math.Sqrt(height * width)).ToString()));
+List<Tuple<double, int, int>> hubsDensity = generateHubsDensity(densityTable, masterRandomNumber, rand);
+List<Tuple<double, int, int>> hubsDesirability = generateHubsDesirability(desirabilityTable, masterRandomNumber, rand);
+double[] distributionDensity = generateDistributionDensity(hubsDensity, masterRandomNumber);
+double[] distributionDesirability = generateDistributionDesirability(hubsDesirability, masterRandomNumber);
 //randomową liczbe z zakresu 0 do max(dystrybuanta)
 //wyszukiwaniem przez podział - coś jak quicksort troche chyba - wyszukac indeks, taki, ze dystr[i] < nasz x < dystr[i+1]
 //odkopać wtedy po dystrybuancie kordy tego
