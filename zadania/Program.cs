@@ -1,8 +1,8 @@
 ﻿using System.Collections.Generic;
 
-int width = 100;
-int height = 100;
-int n = 5000;
+int width = 20;
+int height = 20;
+int n = 15000;
 double[,] generateTableDensity(int width, int height)
 {
     double[,] densityTable = new double[width, height];
@@ -10,7 +10,7 @@ double[,] generateTableDensity(int width, int height)
     {
         for (int y = 0; y < height; y++)
         {
-            densityTable[x, y] = -((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8)) + 4;
+            densityTable[x, y] = ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4;
         }
     }
     return densityTable;
@@ -76,21 +76,20 @@ List<Tuple<int,int,int,int>> generateLinks(List<Tuple<double,int,int>> hubsDensi
     {
         Tuple<int,int> linksA = generateLink(hubsDensity, distributionDensity, ran);
         Tuple<int,int> linksB = generateLink(hubsDesirability, distributionDesirability, ran);
-
-        links.Add(new Tuple<int,int,int,int> (linksA.Item1, linksA.Item2, linksB.Item1, linksB.Item2));
+        if (!(linksA.Item1 == linksB.Item1 && linksA.Item2 == linksB.Item2))
+        {
+            links.Add(new Tuple<int, int, int, int>(linksA.Item1, linksA.Item2, linksB.Item1, linksB.Item2));
+        }
     }
     return links;
 }
 Tuple<int,int> generateLink(List<Tuple<double, int, int>> hubs, double[] distribution, Random ran)
 {
     double maxDistro = generateMaxDistro(distribution);
-    double randomNumber = ran.NextDouble()*maxDistro;
-    //wyszukiwanie przez podział w dystrybuancie
-    //wyciąganie kordów - mamy dystrybuante, wyszukaliśmy i - który element dystrybuanty to jest, możemy wtedy wyciągnąć kordy z hubs
-    return new Tuple<int,int> (hubs[i].Item2, hubs[i].Item3);
+    double randomNumber = Math.Round(ran.NextDouble()*maxDistro,3);
+    int index = binarySearch(distribution, 0, distribution.Length - 1, randomNumber);
+    return new Tuple<int, int>(hubs[index].Item2, hubs[index].Item3);
 }
-
-
 double generateMaxDistro(double[] distribution)
 {
     double distro = 0;
@@ -100,9 +99,49 @@ double generateMaxDistro(double[] distribution)
     }
     return distro;
 }
-
-
-
+int binarySearch(double[] distribution, int left, int right, double numberToSearchFor)
+{
+    int mid = 0;
+    while(left<right) { 
+        mid = (left + right)/2;
+        if (distribution[mid] > numberToSearchFor)
+        {
+            right = mid;
+        }
+        else
+        {
+            if (distribution[mid + 1] > numberToSearchFor)
+            {
+                return mid;
+            }
+            else
+            {
+                left = mid;
+            }
+        }
+    }
+    return mid;
+}
+void summary(List<Tuple<int,int,int,int>> links)
+{
+    Dictionary<string, int> summary = new Dictionary<string, int>();
+    for (int i = 0; i < links.Count; i++)
+    {
+        string travel = $"z {links[i].Item1},{links[i].Item2} do {links[i].Item3},{links[i].Item4}";
+        if (summary.ContainsKey(travel))
+        {
+            summary[travel]++;
+        }
+        else
+        {
+            summary[travel] = 1;
+        }
+    }
+    foreach (KeyValuePair<string,int> kvp in summary)
+    {
+        Console.WriteLine("Podróż {0} odbyła się {1} razy", kvp.Key, kvp.Value);
+    }
+}
 double[,] densityTable = generateTableDensity(width, height);
 double[,] desirabilityTable = generateTableDesirability(width, height);
 Random rand = new Random();
@@ -112,5 +151,5 @@ List<Tuple<double, int, int>> hubsDesirability = generateHubsDesirability(desira
 double[] distributionDensity = generateDistributionDensity(hubsDensity, masterRandomNumber);
 double[] distributionDesirability = generateDistributionDesirability(hubsDesirability, masterRandomNumber);
 List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
-//jakaś funkcja trimLinks usuwająca linki w to samo miejsce
+summary(links);
 //funkcja summary która tworzy Listę tupli (częstość, element listy links), i potem to jakoś wypluwa na konsolę
