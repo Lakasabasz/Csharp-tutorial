@@ -36,8 +36,8 @@ internal class Program
         }
         
         //Losowanie hubów
-        var hubsDensity = ListValueAssign(density, nCoords); 
-        var hubsAttractive = ListValueAssign(attractive, nCoords); 
+        var hubsDensity = GenerateHubsList(density, nCoords); 
+        var hubsAttractive = GenerateHubsList(attractive, nCoords); 
 
         //Usuwanie połączeń o tym samym punkcie startowym i końcowym
         for (int i = 0; i < hubsDensity.Count; i++)
@@ -60,6 +60,7 @@ internal class Program
 
         var routes = new List<Tuple<int, int, int, int>>();
 
+        //Tworzenie połączeń między hubami o tych samych indeksach
         for (int i = 0; i < sources.Count && i < destinations.Count; i++) {
             routes.Add(Tuple.Create(sources[i].Item1, sources[i].Item2, destinations[i].Item1, destinations[i].Item2));
         }
@@ -77,27 +78,17 @@ internal class Program
 
         var routesSorted = routesCount.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
 
-        //var listaaa = new Dictionary<Tuple<int, int, int, int>, int>(routesSorted);
+        
 
-        //Sortowanie listy hubow pod względem liczby wystąpień + Wypisanie raportu
-        //OutputReport(QuickSort.SortList(startHubsCount, 0, startHubsCount.Count() - 1), "poczatkowe");
-        //OutputReport(QuickSort.SortList(endHubsCount, 0, endHubsCount.Count() - 1), "koncowe");
-
-
-        /*
-        Console.WriteLine(" ");
-        foreach (Tuple<int, int> tuple in possibleHubs) {
-            Console.WriteLine(tuple.Item1 + " " + tuple.Item2);
-        }
-        */
-        OutputReport(routesSorted);
+        var sourcesCount = CountAllHubs(sources);
+        var destinationsCount = CountAllHubs(destinations);
 
 
-
+        OutputReport(routesSorted, sourcesCount, de);
     }
 
 
-    private static List<Tuple<int, int, double>> ListValueAssign(double[,] list, int n) {
+    private static List<Tuple<int, int, double>> GenerateHubsList(double[,] list, int n) {
         var hubs = new List<Tuple<int, int, double>>();
 
         while (hubs.Count != n)
@@ -149,12 +140,30 @@ internal class Program
         return list;
     }
 
-    private static void OutputReport(Dictionary<Tuple<int, int, int, int>, int> arr) {
+    private static void OutputReport(Dictionary<Tuple<int, int, int, int>, int> arr, Dictionary<Tuple<int, int>, int> sources, Dictionary<Tuple<int, int>, int> destinations) {
         Console.WriteLine("Polaczenia: ");
         foreach (var dict in arr)
         {
             Console.WriteLine($"({dict.Key.Item1}, {dict.Key.Item2}) ->  ({dict.Key.Item3}, {dict.Key.Item4})  Ilosc: {dict.Value}");
         }
+
+        Console.WriteLine("");
+        Console.WriteLine($"Najwiecej osob podrozowalo z: ({sources[0].Key.Item1}, {sources[0].Key.Item2}) ilosc: {sources[0].Value}");
+        Console.WriteLine($"Najwiecej osob podrozowalo do: ({destinations[0].Key.Item1}, {destinations[0].Key.Item2}) ilosc: {destinations[0].Value}");
+    }
+
+    private static Dictionary<Tuple<int, int>, int> CountAllHubs(List<Tuple<int, int>> arr) {
+        var dict = new Dictionary<Tuple<int, int>, int>();
+
+        foreach (Tuple<int, int> tuple in arr) {
+            if (dict.ContainsKey(tuple)) {
+                dict[tuple]++;
+            } else {
+                dict.Add(tuple, 1);
+            }
+        }
+
+        return dict.OrderBy(x => x.Value).ToDictionary(x => x.Key, x => x.Value);
     }
 
     private static double RandomDouble(double min, double max) { 
