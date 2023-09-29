@@ -103,6 +103,61 @@ void summary(List<Tuple<int,int,int,int>> links)
     foreach (KeyValuePair<string,int> kvp in summary)
         Console.WriteLine("Podróż {0} odbyła się {1} razy", kvp.Key, kvp.Value);
 }
+int GetAllTo(int i, int j, List<Tuple<int,int,int,int>> links)
+{
+    IEnumerable<Tuple<int,int,int,int>> appropiateLinksList =
+                    from link in links
+                    where link.Item3 == i && link.Item4==j
+                    select link;
+    return appropiateLinksList.Count();
+}
+int GetAllFrom(int i, int j, List<Tuple<int, int, int, int>> links)
+{
+    IEnumerable<Tuple<int, int, int, int>> appropiateLinksList =
+                    from link in links
+                    where link.Item1 == i && link.Item2 == j
+                    select link;
+    return appropiateLinksList.Count();
+}
+void maxTo(List<Tuple<int,int,int,int>> links)
+{
+    int[] result = { 0, 0, 0 };
+    for(int i = 0; i<height; i++)
+    {
+        for(int j = 0; j<width; j++)
+        {
+            int resultAmount = GetAllTo(i, j, links);
+            if (resultAmount > result[0])
+            {
+                result[0]=resultAmount;
+                result[1]=i; result[2]=j;
+            }
+        }
+    }
+    Console.ForegroundColor = ConsoleColor.Red;
+    Console.WriteLine("Najwięcej osób - {0} - podróżowało do {1},{2}", result[0], result[1], result[2]);
+    Console.ForegroundColor = ConsoleColor.White;
+}
+void maxFrom(List<Tuple<int,int,int,int>> links)
+{
+    int[] result = { 0, 0, 0 };
+    for (int i = 0; i<height; i++)
+    {
+        for(int j = 0; j<width; j++)
+        {
+            int resultAmount = GetAllFrom(i, j, links);
+            if (resultAmount > result[0])
+            {
+                result[0] = resultAmount;
+                result[1] = i; result[2] = j;
+            }
+        }
+    }
+    Console.ForegroundColor = ConsoleColor.Green;
+    Console.WriteLine("Najwięcej osób - {0} - podróżowało z {1},{2}", result[0], result[1], result[2]);
+    Console.ForegroundColor = ConsoleColor.White;
+}
+
 double[,] densityTable = generateTableDensity(width, height);
 double[,] desirabilityTable = generateTableDesirability(width, height);
 Random rand = new Random();
@@ -112,4 +167,8 @@ List<Tuple<double, int, int>> hubsDesirability = generateHubs(desirabilityTable,
 double[] distributionDensity = generateDistribution(hubsDensity);
 double[] distributionDesirability = generateDistribution(hubsDesirability);
 List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
+maxTo(links);
+Console.WriteLine();
+maxFrom(links);
+Console.WriteLine();
 summary(links);
