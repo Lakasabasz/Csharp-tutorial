@@ -3,25 +3,15 @@
 int width = 20;
 int height = 20;
 int n = 15000;
-double[,] generateTableDensity(int width, int height)
+double[,] generateTable(int x, int y, Func<int, int, double> generator)
 {
-    double[,] densityTable = new double[width, height];
-    for (int x = 0; x < width; x++)
+    double[,] Table = new double[x,y];
+    for (int i = 0; i < width; i++)
     {
-        for (int y = 0; y < height; y++)
-            densityTable[x, y] = ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4;
+        for (int j = 0; j < height; j++)
+            Table[i,j] = generator(x, y);
     }
-    return densityTable;
-}
-double[,] generateTableDesirability(int width, int height)
-{
-    double[,] desirabilityTable = new double[width, height];
-    for (int x = 0; x < width; x++)
-    {
-        for (int y = 0; y < height; y++)
-            desirabilityTable[x, y] = -Math.Abs((x - width / 2.0) * (y - height / 2.0)) + (width / 2.0 * height / 2.0);
-    }
-    return desirabilityTable;
+    return Table;
 }
 List<Tuple<double,int,int>> generateHubs(double[,] table, int amount, Random random)
 {
@@ -101,65 +91,43 @@ void summary(List<Tuple<int,int,int,int>> links)
             summary[travel] = 1;
     }
     foreach (KeyValuePair<string,int> kvp in summary)
-        Console.WriteLine("Podróż {0} odbyła się {1} razy", kvp.Key, kvp.Value);
-}
-int GetAllTo(int i, int j, List<Tuple<int,int,int,int>> links)
-{
-    IEnumerable<Tuple<int,int,int,int>> appropiateLinksList =
-                    from link in links
-                    where link.Item3 == i && link.Item4==j
-                    select link;
-    return appropiateLinksList.Count();
-}
-int GetAllFrom(int i, int j, List<Tuple<int, int, int, int>> links)
-{
-    IEnumerable<Tuple<int, int, int, int>> appropiateLinksList =
-                    from link in links
-                    where link.Item1 == i && link.Item2 == j
-                    select link;
-    return appropiateLinksList.Count();
+        Console.WriteLine($"Podróż {kvp.Key} odbyła się {kvp.Value} razy");
 }
 void maxTo(List<Tuple<int,int,int,int>> links)
 {
-    int[] result = { 0, 0, 0 };
-    for(int i = 0; i<height; i++)
+    Dictionary<Tuple<int,int>,int> amountPerHub = new Dictionary<Tuple<int, int>, int>();
+    for (int i = 0; i < links.Count; i++)
     {
-        for(int j = 0; j<width; j++)
-        {
-            int resultAmount = GetAllTo(i, j, links);
-            if (resultAmount > result[0])
-            {
-                result[0]=resultAmount;
-                result[1]=i; result[2]=j;
-            }
-        }
+        Tuple<int, int> key = new Tuple<int, int>(links[i].Item3, links[i].Item4);
+        if (amountPerHub.ContainsKey(key)) amountPerHub[key]++;
+        else amountPerHub.Add(key, 1);
     }
-    Console.ForegroundColor = ConsoleColor.Red;
-    Console.WriteLine("Najwięcej osób - {0} - podróżowało do {1},{2}", result[0], result[1], result[2]);
-    Console.ForegroundColor = ConsoleColor.White;
+    var result = amountPerHub.MaxBy(x => x.Value);
+    log($"Najwięcej osób - {result.Value} - podróżowało do {result.Key.Item1},{result.Key.Item2}", false);
 }
 void maxFrom(List<Tuple<int,int,int,int>> links)
 {
-    int[] result = { 0, 0, 0 };
-    for (int i = 0; i<height; i++)
+    Dictionary<Tuple<int, int>, int> amountPerHub = new Dictionary<Tuple<int, int>, int>();
+    for (int i = 0; i < links.Count; i++)
     {
-        for(int j = 0; j<width; j++)
-        {
-            int resultAmount = GetAllFrom(i, j, links);
-            if (resultAmount > result[0])
-            {
-                result[0] = resultAmount;
-                result[1] = i; result[2] = j;
-            }
-        }
+        Tuple<int, int> key = new Tuple<int, int>(links[i].Item1, links[i].Item2);
+        if (amountPerHub.ContainsKey(key)) amountPerHub[key]++;
+        else amountPerHub.Add(key, 1);
     }
-    Console.ForegroundColor = ConsoleColor.Green;
-    Console.WriteLine("Najwięcej osób - {0} - podróżowało z {1},{2}", result[0], result[1], result[2]);
+    var result = amountPerHub.MaxBy(x => x.Value);
+    log($"Najwięcej osób - {result.Value} - podróżowało z {result.Key.Item1},{result.Key.Item2}", true);
+}
+
+void log(string message, bool colorMode)
+{
+    if (colorMode == false) Console.ForegroundColor = ConsoleColor.Red;
+    else Console.ForegroundColor=ConsoleColor.Green;
+    Console.WriteLine(message);
     Console.ForegroundColor = ConsoleColor.White;
 }
 
-double[,] densityTable = generateTableDensity(width, height);
-double[,] desirabilityTable = generateTableDesirability(width, height);
+double[,] densityTable = generateTable(height, width, (x,y)=> ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4);
+double[,] desirabilityTable = generateTable(height, width, (x,y)=> ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4);
 Random rand = new Random();
 int hubsAmount = rand.Next(0, (int)(5 * Math.Sqrt(height * width))); //ilość hubów do wygenerowania, ograniczona, żeby nie było ich miliard na mapie 10*10
 List<Tuple<double, int, int>> hubsDensity = generateHubs(densityTable, hubsAmount, rand);
@@ -168,7 +136,5 @@ double[] distributionDensity = generateDistribution(hubsDensity);
 double[] distributionDesirability = generateDistribution(hubsDesirability);
 List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
 maxTo(links);
-Console.WriteLine();
 maxFrom(links);
-Console.WriteLine();
 summary(links);
