@@ -95,27 +95,15 @@ void summary(List<Tuple<int,int,int,int>> links)
 }
 void maxTo(List<Tuple<int,int,int,int>> links)
 {
-    Dictionary<Tuple<int,int>,int> amountPerHub = new Dictionary<Tuple<int, int>, int>();
-    for (int i = 0; i < links.Count; i++)
-    {
-        Tuple<int, int> key = new Tuple<int, int>(links[i].Item3, links[i].Item4);
-        if (amountPerHub.ContainsKey(key)) amountPerHub[key]++;
-        else amountPerHub.Add(key, 1);
-    }
-    var result = amountPerHub.MaxBy(x => x.Value);
-    log($"Najwięcej osób - {result.Value} - podróżowało do {result.Key.Item1},{result.Key.Item2}", false);
+    var amountPerHub = links.GroupBy(link => new Tuple<int, int>(link.Item3, link.Item4)).Select(c => new { Key = c.Key, total = c.Count() });
+    var result = amountPerHub.MaxBy(x => x.total);
+    log($"Najwięcej osób - {result.total} - podróżowało do {result.Key.Item1},{result.Key.Item2}", false);
 }
 void maxFrom(List<Tuple<int,int,int,int>> links)
 {
-    Dictionary<Tuple<int, int>, int> amountPerHub = new Dictionary<Tuple<int, int>, int>();
-    for (int i = 0; i < links.Count; i++)
-    {
-        Tuple<int, int> key = new Tuple<int, int>(links[i].Item1, links[i].Item2);
-        if (amountPerHub.ContainsKey(key)) amountPerHub[key]++;
-        else amountPerHub.Add(key, 1);
-    }
-    var result = amountPerHub.MaxBy(x => x.Value);
-    log($"Najwięcej osób - {result.Value} - podróżowało z {result.Key.Item1},{result.Key.Item2}", true);
+    var amountPerHub = links.GroupBy(link => new Tuple<int, int>(link.Item1, link.Item2)).Select(c => new { Key = c.Key, total = c.Count() });
+    var result = amountPerHub.MaxBy(x => x.total);
+    log($"Najwięcej osób - {result.total} - podróżowało z {result.Key.Item1},{result.Key.Item2}", true);
 }
 
 void log(string message, bool colorMode)
