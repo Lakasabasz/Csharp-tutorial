@@ -3,33 +3,26 @@
 int width = 20;
 int height = 20;
 int n = 15000;
-double[,] generateTableDensity(int width, int height)
+double[,] generateTable(int x, int y, bool mode, Func<int,int,int,int,double> generator)
 {
-    double[,] densityTable = new double[width, height];
-    for (int x = 0; x < width; x++)
+    int a=0, b=0;
+    if (mode == true) {a=x; b=y;}
+    double[,] Table = new double[x,y];
+    for (int i = 0; i < x; i++)
     {
-        for (int y = 0; y < height; y++)
-            densityTable[x, y] = ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4;
+        for (int j = 0; j < y; j++) {
+            Table[i,j] = generator(i,j,a,b);
+        }
     }
-    return densityTable;
+    return Table;
 }
-double[,] generateTableDesirability(int width, int height)
-{
-    double[,] desirabilityTable = new double[width, height];
-    for (int x = 0; x < width; x++)
-    {
-        for (int y = 0; y < height; y++)
-            desirabilityTable[x, y] = -Math.Abs((x - width / 2.0) * (y - height / 2.0)) + (width / 2.0 * height / 2.0);
-    }
-    return desirabilityTable;
-}
-List<Tuple<double,int,int>> generateHubs(double[,] table, int amount, Random random)
+List<Tuple<double,int,int>> generateHubs(double[,] table, int amount, Random random, int x, int y)
 {
     List<Tuple<double, int, int>> hubs = new List<Tuple<double, int, int>>();
-    for(int x = 0; x<amount; x++)
+    for(int i = 0; i<amount; i++)
     {
-        int h = random.Next(height-1);
-        int w = random.Next(width-1);
+        int h = random.Next(x-1);
+        int w = random.Next(y-1);
         Tuple<double, int, int> hub = new Tuple<double, int, int>(table[h, w], h, w);
         if (!hubs.Contains(hub))
         hubs.Add(hub);
@@ -91,25 +84,48 @@ int binarySearch(double[] distribution, int left, int right, double numberToSear
 }
 void summary(List<Tuple<int,int,int,int>> links)
 {
-    Dictionary<string, int> summary = new Dictionary<string, int>();
+    Dictionary<Tuple<int,int,int,int>, int> summary = new Dictionary<Tuple<int,int,int,int>, int>();
     for (int i = 0; i < links.Count; i++)
     {
-        string travel = $"z {links[i].Item1},{links[i].Item2} do {links[i].Item3},{links[i].Item4}";
+        Tuple<int,int,int,int> travel = new Tuple<int,int,int,int>(links[i].Item1,links[i].Item2,links[i].Item3,links[i].Item4);
         if (summary.ContainsKey(travel))
             summary[travel]++;
         else
             summary[travel] = 1;
     }
-    foreach (KeyValuePair<string,int> kvp in summary)
-        Console.WriteLine("Podróż {0} odbyła się {1} razy", kvp.Key, kvp.Value);
+    foreach (KeyValuePair<Tuple<int,int,int,int>,int> kvp in summary)
+        Console.WriteLine($"Podróż z {kvp.Key.Item1},{kvp.Key.Item2} do {kvp.Key.Item3},{kvp.Key.Item4} odbyła się {kvp.Value} razy");
 }
-double[,] densityTable = generateTableDensity(width, height);
-double[,] desirabilityTable = generateTableDesirability(width, height);
+void maxTo(List<Tuple<int,int,int,int>> links)
+{
+    var amountPerHub = links.GroupBy(link => new Tuple<int, int>(link.Item3, link.Item4)).Select(c => new { Key = c.Key, total = c.Count() });
+    var result = amountPerHub.MaxBy(x => x.total);
+    log($"Najwięcej osób - {result.total} - podróżowało do {result.Key.Item1},{result.Key.Item2}", false);
+}
+void maxFrom(List<Tuple<int,int,int,int>> links)
+{
+    var amountPerHub = links.GroupBy(link => new Tuple<int, int>(link.Item1, link.Item2)).Select(c => new { Key = c.Key, total = c.Count() });
+    var result = amountPerHub.MaxBy(x => x.total);
+    log($"Najwięcej osób - {result.total} - podróżowało z {result.Key.Item1},{result.Key.Item2}", true);
+}
+
+void log(string message, bool colorMode)
+{
+    if (colorMode == false) Console.ForegroundColor = ConsoleColor.Red;
+    else Console.ForegroundColor=ConsoleColor.Green;
+    Console.WriteLine(message);
+    Console.ForegroundColor = ConsoleColor.White;
+}
+
+double[,] densityTable = generateTable(height, width, false, (x,y,a,b)=> ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4);
+double[,] desirabilityTable = generateTable(height, width, true, (x,y,a,b)=> -Math.Abs((x - a / 2.0) * (y - b / 2.0)) + (a / 2.0 * b / 2.0));
 Random rand = new Random();
 int hubsAmount = rand.Next(0, (int)(5 * Math.Sqrt(height * width))); //ilość hubów do wygenerowania, ograniczona, żeby nie było ich miliard na mapie 10*10
-List<Tuple<double, int, int>> hubsDensity = generateHubs(densityTable, hubsAmount, rand);
-List<Tuple<double, int, int>> hubsDesirability = generateHubs(desirabilityTable, hubsAmount, rand);
+List<Tuple<double, int, int>> hubsDensity = generateHubs(densityTable, hubsAmount, rand, width, height);
+List<Tuple<double, int, int>> hubsDesirability = generateHubs(desirabilityTable, hubsAmount, rand, width, height);
 double[] distributionDensity = generateDistribution(hubsDensity);
 double[] distributionDesirability = generateDistribution(hubsDesirability);
 List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
+maxTo(links);
+maxFrom(links);
 summary(links);
