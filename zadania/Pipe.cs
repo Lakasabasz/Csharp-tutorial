@@ -14,6 +14,12 @@ namespace zadania
         {
             this.startHub = startHub;
             this.endHub = endHub;
+            addPipesToHubs();
+        }
+        private void addPipesToHubs()
+        {
+            startHub.addPipe(this);
+            endHub.addPipe(this);
         }
     }
 }

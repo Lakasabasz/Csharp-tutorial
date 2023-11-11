@@ -1,60 +1,27 @@
 ﻿using System.Collections.Generic;
+using zadania;
 
 int width = 20;
 int height = 20;
 int n = 15000;
-double[,] generateTable(int x, int y, bool mode, Func<int,int,int,int,double> generator)
+void generatePipes( Random ran, int amount)
 {
-    int a=0, b=0;
-    if (mode == true) {a=x; b=y;}
-    double[,] Table = new double[x,y];
-    for (int i = 0; i < x; i++)
+    for (int i = 0; i < amount; i++)
     {
-        for (int j = 0; j < y; j++) {
-            Table[i,j] = generator(i,j,a,b);
+        Hub hubA = generatePoint(ran);
+        Hub hubB = generatePoint(ran);
+        if (!(hubA.getCoordinates().Item1 == hubB.getCoordinates().Item1 && hubA.getCoordinates().Item2 == hubB.getCoordinates().Item2))
+        {
+            Pipe pipe = new Pipe(hubA, hubB);
         }
     }
-    return Table;
 }
-List<Tuple<double,int,int>> generateHubs(double[,] table, int amount, Random random, int x, int y)
+Hub generatePoint(Random ran)
 {
-    List<Tuple<double, int, int>> hubs = new List<Tuple<double, int, int>>();
-    for(int i = 0; i<amount; i++)
-    {
-        int h = random.Next(x-1);
-        int w = random.Next(y-1);
-        Tuple<double, int, int> hub = new Tuple<double, int, int>(table[h, w], h, w);
-        if (!hubs.Contains(hub))
-        hubs.Add(hub);
-    }
-    return hubs;
-}
-double[] generateDistribution(List<Tuple<double,int,int>> hubs)
-{
-    double[] distribution = new double[hubs.Count];
-    distribution[0] = hubs[0].Item1;
-    for (int i = 1; i < hubs.Count; i++)
-        distribution[i]= hubs[i].Item1 + distribution[i-1];
-    return distribution;
-}
-List<Tuple<int,int,int,int>> generateLinks(List<Tuple<double,int,int>> hubsDensity, List<Tuple<double,int,int>> hubsDesirability, double[] distributionDensity, double[] distributionDesirability, Random ran, int n)
-{
-    List<Tuple<int, int, int, int>> links = new List<Tuple<int, int, int, int>>();
-    for (int i = 0; i < n; i++)
-    {
-        Tuple<int,int> linksA = generatePoint(hubsDensity, distributionDensity, ran);
-        Tuple<int,int> linksB = generatePoint(hubsDesirability, distributionDesirability, ran);
-        if (!(linksA.Item1 == linksB.Item1 && linksA.Item2 == linksB.Item2))
-            links.Add(new Tuple<int, int, int, int>(linksA.Item1, linksA.Item2, linksB.Item1, linksB.Item2));
-    }
-    return links;
-}
-Tuple<int,int> generatePoint(List<Tuple<double, int, int>> hubs, double[] distribution, Random ran)
-{
-    double maxDistro = generateMaxDistro(distribution);
+    double maxDistro = 1; //generateMaxDistro(distribution);
     double numberToSearchFor = Math.Round(ran.NextDouble()*maxDistro,3);
-    int index = binarySearch(distribution, 0, distribution.Length - 1, numberToSearchFor);
-    return new Tuple<int, int>(hubs[index].Item2, hubs[index].Item3);
+    //int index = binarySearch(distribution, 0, distribution.Length - 1, numberToSearchFor);
+    return new Hub(0, 0, 0);//new Tuple<int, int>(hubs[index].Item2, hubs[index].Item3);
 }
 double generateMaxDistro(double[] distribution)
 {
@@ -117,15 +84,16 @@ void log(string message, bool colorMode)
     Console.ForegroundColor = ConsoleColor.White;
 }
 
-double[,] densityTable = generateTable(height, width, false, (x,y,a,b)=> ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4);
-double[,] desirabilityTable = generateTable(height, width, true, (x,y,a,b)=> -Math.Abs((x - a / 2.0) * (y - b / 2.0)) + (a / 2.0 * b / 2.0));
+Map densityMap = new Map(height, width, false, (x,y,a,b)=> ((x - 5) * (x - 5) + (y - 5) * (y - 5)) * (((x - 1) * (x - 1) + (y - 3) * (y - 3)) / (8.0)) + 4);
+Map desirabilityMap = new Map(height, width, true, (x,y,a,b)=> -Math.Abs((x - a / 2.0) * (y - b / 2.0)) + (a / 2.0 * b / 2.0));
+
 Random rand = new Random();
 int hubsAmount = rand.Next(0, (int)(5 * Math.Sqrt(height * width))); //ilość hubów do wygenerowania, ograniczona, żeby nie było ich miliard na mapie 10*10
-List<Tuple<double, int, int>> hubsDensity = generateHubs(densityTable, hubsAmount, rand, width, height);
-List<Tuple<double, int, int>> hubsDesirability = generateHubs(desirabilityTable, hubsAmount, rand, width, height);
-double[] distributionDensity = generateDistribution(hubsDensity);
-double[] distributionDesirability = generateDistribution(hubsDesirability);
-List<Tuple<int,int,int,int>> links = generateLinks(hubsDensity, hubsDesirability, distributionDensity, distributionDesirability, rand, n);
-maxTo(links);
-maxFrom(links);
-summary(links);
+
+
+densityMap.generateHubs(hubsAmount, rand, width, height);
+desirabilityMap.generateHubs(hubsAmount, rand, width, height);
+generatePipes(rand, n);
+//maxTo(links);
+//maxFrom(links);
+//summary(links);
