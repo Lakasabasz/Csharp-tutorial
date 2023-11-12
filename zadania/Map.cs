@@ -63,6 +63,38 @@ namespace zadania
             return hubs[0];
             //cdn
         }
+        public Hub generatePoint(Random ran)
+        {
+            int i = 0;
+            double [] distribution = new double[hubs.Count];
+            foreach (Hub hub in hubs) {
+                distribution[i] = hub.getProbability();
+                i++;
+            }
+            double numberToSearchFor = Math.Round(ran.NextDouble() * distribution[distribution.Length-1], 3);
 
+            int index = binarySearch(distribution, numberToSearchFor);
+            return hubs[index];
+        }
+        private int binarySearch(double [] distribution, double numberToSearchFor)
+        {
+            int left = 0;
+            int right = distribution.Length-1;
+            int mid = 0;
+            while (left < right)
+            {
+                mid = (left + right) / 2;
+                if (distribution[mid] > numberToSearchFor)
+                    right = mid;
+                else
+                {
+                    if (distribution[mid + 1] > numberToSearchFor)
+                        return mid;
+                    else
+                        left = mid;
+                }
+            }
+            return mid;
+        }
     }
 }

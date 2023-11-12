@@ -29,5 +29,6 @@ namespace zadania
         {
             return coordinates;
         }
+        public double getProbability() { return probability; }
     }
 }
